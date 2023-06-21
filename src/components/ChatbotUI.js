@@ -28,6 +28,7 @@ const ChatbotUI = () => {
   const draggableRef = useRef(null);
   const uiRef = useRef();
   
+  let nextMetaIndex = 0;
 
   const userEmail = localStorage.getItem('userEmail');
   const token = localStorage.getItem('token');
@@ -69,11 +70,12 @@ const ChatbotUI = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          Authorization: token,
+          Authorization: '911e38a68298a5a40742b78cbb402c126730a66b7eda67dc9744cf27a1feec20',
         },
       })
         .then((response) => response.json())
         .then((data) => {
+          console.log(data)
         //set welcome response
           let botMessage = {
             text: data.response,
@@ -159,58 +161,62 @@ const ChatbotUI = () => {
     //add user message to messages array
       setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    //conversation api post
-      if (startIndex !== 0) {
-        console.log('FETCHING')
-        setBotMetadata('bot')
-        setIsLoading(true);
-        fetch('http://34.70.228.66:8881/api/startConversation', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            Authorization: token,
-          },
-          body: new URLSearchParams({
-            text: inputText,
-            confirm: "False"
-          }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-          //set bot response
-            let botMessage = {
-              text: data.response,
-              sender: 'bot',
-              services: data.services,
-              metadata: 'host',
-              metaindex: 0
-              
-            };
-            console.log(data);
-            console.log(data.response)
-            if (data.state !== 'success') {
-              botMessage = {
-                text: 'ERROR! Backend response failed.',
-                sender: 'bot',
-                metadata: 'fail'
-              };
-            } 
-            //add bot message to messages array
-            setMessages((prevMessages) => [...prevMessages, botMessage]);
-            setIsLoading(false);
-            setBandaidArray((prevBandaids) => [...prevBandaids - 6, botMessage.metaindex])
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-            setIsLoading(false);
-          });
-      
-      setInputText('');
+//conversation api post
+if (startIndex !== 0) {
+  console.log('FETCHING')
+  setBotMetadata('bot')
+  setIsLoading(true);
+  fetch('http://34.70.228.66:8881/api/startConversation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      Authorization: '911e38a68298a5a40742b78cbb402c126730a66b7eda67dc9744cf27a1feec20',
+    },
+    body: new URLSearchParams({
+      text: inputText,
+      confirm: "False"
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+    //set bot response
+      let botMessage = {
+        text: data.response,
+        sender: 'bot',
+        services: data.services,
+        metadata: 'host',
+        metaindex: 0
+        
+      };
+      console.log(data);
+      console.log(data.response)
+      if (data.state !== 'success') {
+        botMessage = {
+          text: 'ERROR! Backend response failed.',
+          sender: 'bot',
+          metadata: 'fail'
+        };
+      } 
+      //add bot message to messages array
+      setMessages((prevMessages) =>
+  prevMessages.map((message) => ({
+    ...message,
+    metaindex: message.metaindex + 6,
+  }))
+);
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+      nextMetaIndex += 6
+      setIsLoading(false);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      setIsLoading(false);
+    });
 
-    }
-    }
-    
-  };
+setInputText('');
+}
+}
+};
 
   useEffect(() => {
     if (messages.some((message) => message.metadata === 'host')) {
@@ -375,6 +381,14 @@ const onDrag = (e, data, message) => {
   const draggablePositionTop = draggableTop + y;
   const draggablePositionLeft = draggableLeft + x;
 
+  const lineHeight = parseInt(window.getComputedStyle(textareaElement).lineHeight, 10);
+
+  
+  const row = Math.floor((draggablePositionTop - textareaTop) / lineHeight)
+  setCurrentRow(row - message.metaindex)
+  console.log(row)
+  console.log("META:" + message.metaindex)
+
   console.log(currentRow)
   if (
     draggablePositionTop >= textareaTop &&
@@ -411,20 +425,13 @@ const handleDragEnd = (e, data, message) => {
   const draggablePositionTop = draggableTop + y;
   const draggablePositionLeft = draggableLeft + x;
 
-  const lineHeight = parseInt(window.getComputedStyle(textareaElement).lineHeight, 10);
-
-  
-  const row = Math.floor((draggablePositionTop - textareaTop) / lineHeight)
-  setCurrentRow(row - message.metaindex)
-  console.log(row)
-
   if (
     draggablePositionTop >= textareaTop &&
     draggablePositionTop + draggableHeight <= textareaTop + textareaHeight &&
     draggablePositionLeft >= textareaLeft &&
     draggablePositionLeft + draggableWidth <= textareaLeft + textareaWidth
   ) {
-    handleMove(message, row);
+    handleMove(message, currentRow);
   }
 
   setIsDragging(false);

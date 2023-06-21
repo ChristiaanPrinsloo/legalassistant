@@ -49,11 +49,14 @@ h1 {
   border-color: rgba(127,127,127, .3);
   border-radius:4px;
   border-top-right-radius: 0px !important;
-  z-index:50 !important
 }
 
 .pin {
   border-color: rgba(127,127,127, .3);
+}
+
+.absolutely {
+  z-index:2000 !important;
 }
 
 .host-chat-hover {
@@ -337,15 +340,17 @@ position:relative;
 }
 
 .textareaonehover {
+  box-shadow: 1px 1px 0 #DDDDDD;
   border: solid 2px;
   border-color: rgb(42,58,84);
   box-shadow: 1px 1px 0 #DDDDDD;
   font-size: 22px;
   line-height: 50px;
-  background-image: -moz-linear-gradient(top , transparent, transparent 49px,#E7EFF8 0px);
-  background-image: -webkit-linear-gradient(top , transparent, transparent 49px,#E7EFF8 0);
-  padding: 11px 70px;
+  background-image: -moz-linear-gradient(top , transparent, transparent 47px,#E7EFF8 0px);
+  background-image: -webkit-linear-gradient(top , transparent, transparent 47px,#e6e6e6);
+  padding: 11px 60px;
   overflow:hidden;
+  resize:none;
   -webkit-background-size:  100% 50px;
   background-size: 100% 50px;
 }
